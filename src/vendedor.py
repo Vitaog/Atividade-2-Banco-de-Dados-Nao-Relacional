@@ -2,10 +2,10 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from datetime import datetime 
 
-url = "" # Insira a url de sua base de dados
+uri = "" # Insira a url de sua base de dados
 
 # Cria um novo cliente e conecta ao servidor
-client = MongoClient(url, server_api=ServerApi('1'))
+client = MongoClient(uri, server_api=ServerApi('1'))
 global db
 db = client.Mercado_Livre
 
@@ -132,6 +132,51 @@ def listar_produtos(nome_vendedor):
         if "produtos" in vendedor:
             for produto in vendedor["produtos"]:
                 print(f"{produto['nome_produto']}, Descrição: {produto['descricao']} , Preço: R$ {produto['preco']}, Quantidade disponivél: {produto['quantidade_disponivel']}")
+        else:
+            print("O vendedor não possui produtos cadastrados.")
+    else:
+        print(f"Vendedor com o nome '{nome_vendedor}' não encontrado.")
+
+def atualizar_produto():
+    global db
+    mycol_vendedor = db.Vendedor
+
+    nome_vendedor = input("Digite o nome do vendedor: ")
+
+    
+    vendedor = mycol_vendedor.find_one({"nome_vendedor": nome_vendedor})
+
+    if vendedor:
+        if "produtos" in vendedor and len(vendedor["produtos"]) > 0:
+            print(f"Produtos do vendedor '{nome_vendedor}':")
+            for i, produto in enumerate(vendedor["produtos"], 1):
+                print(f"{i}.  {produto['nome_produto']}, Descrição: {produto['descricao']}")
+
+            
+            while True:
+                try:
+                    produto_id = int(input("Selecione um produto (digite o ID): "))
+                    if 1 <= produto_id <= len(vendedor["produtos"]):
+                        break
+                    else:
+                        print("ID inválido. Tente novamente.")
+                except ValueError:
+                    print("ID inválido. Tente novamente.")
+
+           
+            produto_selecionado = vendedor["produtos"][produto_id - 1]
+
+            novo_preco = float(input("Digite o novo preço do produto: "))
+            nova_quantidade = int(input("Digite a nova quantidade disponível: "))
+
+            
+            vendedor["produtos"][produto_id - 1]["preco"] = novo_preco
+            vendedor["produtos"][produto_id - 1]["quantidade_disponivel"] = nova_quantidade
+
+            
+            mycol_vendedor.update_one({"_id": vendedor["_id"]}, {"$set": vendedor})
+
+            print(f"Produto '{produto_selecionado['nome_produto']}' atualizado com sucesso.")
         else:
             print("O vendedor não possui produtos cadastrados.")
     else:

@@ -1,4 +1,6 @@
+from produto import add_produto, delete_produto, read_produto, update_produto
 from usuario import add_compra, create_usuario, delete_compra, delete_favorito, read_usuario, update_usuario, delete_usuario, add_favorito
+from vendedor import add_vendedor, atualizar_produto, cadastro_produto, listar_produtos,read_vendedor,update_vendedor,delete_vendedor
 
 key = 0
 sub = 0
@@ -74,8 +76,97 @@ while (key != 'S' and key != 's'):
             print ("")
             
     elif (key == '2'):
-        print("Menu do Vendedor")        
+         print("/-------------------Menu do Vendedor---------------------------/")
+         print("1-Create Vendedor")
+         print("2-Read Vendedor")
+         print("3-Update Vendedor")
+         print("4-Delete Vendedor")
+         print("/--------------------Funcionalidades--------------------------/")
+         print("5-Adicionar Produto")
+         print("6-Listar Produtos")
+         print("7-Atualizar Produto")
+         print("8-Remover Produto")
+         print("9-Adicionar Avaliação")
+         print("10-Remover Avaliação")
+         print("/--------------------------------------------------------------/")
+         sub = input("Digite a opção desejada? (V para voltar) ")
+         print ("") 
+
+         if (sub == '1'):
+             print("/-------------------Criação de Vendedor------------------------/")
+             add_vendedor()
+             print ("")
+        
+         elif (sub == '2'):
+             print("/----------------Listagem de Vendedor-------------------------/")
+             nome = input("Digite o nome do vendedor ou clique ENTER para listagem dos vendedores: ")
+             read_vendedor(nome)
+             print ("")
+
+         elif (sub == '3'):
+             print("/--------------------------------------------------------------/")
+             nome = input("Digite o nome do vendedor que deseja atualizar: ")
+             update_vendedor(nome)
+             print ("")   
+
+         elif (sub == '4'):
+             print("/--------------------------------------------------------------/")
+             nome = input("Digite o nome para deletar o vendedor desejado: ")
+             delete_vendedor(nome)
+             print ("")
+            
+         elif (sub == '5'):
+             print("/--------------------------------------------------------------/")
+             cadastro_produto()
+             print ("")
+        
+         elif (sub == '6'):
+            print("/--------------------------------------------------------------/")
+            nome = input("Digite o nome do vendedor que deseja listar os produtos: ")
+            listar_produtos(nome)
+            print ("")
+        
+         elif (sub == '7'):
+             print("/--------------------------------------------------------------/")
+             atualizar_produto()
+             print ("")
+
+        
+        
+
+
+
     elif (key == '3'):
-        print("Menu do Produto")        
+        print("/----------------------Menu de Produtos------------------------/")
+        print("1-Create Produto")
+        print("2-Read Produto")
+        print("3-Update Produto")
+        print("4-Delete Produto")
+        sub = input("Digite a opção desejada? (V para voltar) ")
+        print ("")      
+
+        if (sub == '1'):
+            print("/-------------------Criação de Produto------------------------/")
+            add_produto()
+            print ("")
+
+        elif (sub == '2'):
+            print("/----------------Listagem de Produto-------------------------/")
+            nome = input("Digite o nome do produto ou clique ENTER para listagem dos produtos: ")
+            read_produto(nome)
+            print ("")
+        
+        elif (sub == '3'):
+            print("/--------------------------------------------------------------/")
+            nome = input("Digite o nome do produto que deseja atualizar: ")
+            update_produto(nome)
+            print ("")
+        
+        elif (sub == '4'):
+            print("/--------------------------------------------------------------/")
+            nome = input("Digite o nome para deletar o produto desejado: ")
+            delete_produto(nome)
+            print ("")
+            
 
 print("Vlw Flw...")

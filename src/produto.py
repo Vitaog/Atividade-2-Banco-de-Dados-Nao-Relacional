@@ -2,10 +2,10 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from datetime import datetime 
 
-url = "" # Insira a url de sua base de dados
+uri = "" # Insira a url de sua base de dados
 
 # Cria um novo cliente e conecta ao servidor
-client = MongoClient(url, server_api=ServerApi('1'))
+client = MongoClient(uri, server_api=ServerApi('1'))
 global db
 db = client.Mercado_Livre
 

@@ -1,6 +1,6 @@
 from produto import add_produto, delete_produto, read_produto, update_produto
 from usuario import add_compra, create_usuario, delete_compra, delete_favorito, read_usuario, update_usuario, delete_usuario, add_favorito
-from vendedor import add_vendedor, atualizar_produto, cadastro_produto, listar_produtos,read_vendedor,update_vendedor,delete_vendedor
+from vendedor import add_vendedor, atualizar_produto, cadastro_produto, listar_produtos,read_vendedor, remover_produto,update_vendedor,delete_vendedor
 
 key = 0
 sub = 0
@@ -129,6 +129,11 @@ while (key != 'S' and key != 's'):
          elif (sub == '7'):
              print("/--------------------------------------------------------------/")
              atualizar_produto()
+             print ("")
+        
+         elif (sub == '8'):
+             print("/--------------------------------------------------------------/")
+             remover_produto()
              print ("")
 
         

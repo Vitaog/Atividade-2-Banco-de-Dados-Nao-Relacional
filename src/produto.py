@@ -2,7 +2,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from datetime import datetime 
 
-url = "" # Insira a url de sua base de dados
+url = "mongodb+srv://vitoroliveira67:123@teste.mkhwdzx.mongodb.net/?retryWrites=true&w=majority" # Insira a url de sua base de dados
 
 # Cria um novo cliente e conecta ao servidor
 client = MongoClient(url, server_api=ServerApi('1'))
@@ -26,13 +26,21 @@ def add_produto():
     x = mycol.insert_one(produto)
     print("Produto inserido com ID ", x.inserted_id)
 
-def read_produto():
+def read_produto(nome):
     global db
     mycol = db.Produto
     print("Produtos existentes: ")
-    mydoc = mycol.find()
-    for produto in mydoc:
-        print(f"Nome do Produto: {produto['nome_produto']}, Descrição: {produto['descricao']}, Data de Cadastro: {produto['data_cadastro']}")
+    if not len (nome):
+        mydoc = mycol.find()
+        for produto in mydoc:
+            print(f" {produto['nome_produto']}")
+    else:
+        myquery = {"nome_produto": nome}
+        mydoc = mycol.find(myquery)
+        for x in mydoc:
+            print(f"Produto: {x['nome_produto']}, Descrição: {x['descricao']}")
+
+    
 
 def update_produto(nome_produto):
     global db

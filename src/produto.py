@@ -2,7 +2,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from datetime import datetime 
 
-url = "mongodb+srv://vitoroliveira67:123@teste.mkhwdzx.mongodb.net/?retryWrites=true&w=majority" # Insira a url de sua base de dados
+url = "" # Insira a url de sua base de dados
 
 # Cria um novo cliente e conecta ao servidor
 client = MongoClient(url, server_api=ServerApi('1'))

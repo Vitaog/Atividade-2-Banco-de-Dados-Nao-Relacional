@@ -36,7 +36,7 @@ def read_vendedor(nome_vendedor):
         myquery = {"nome_vendedor": nome_vendedor}
         mydoc = mycol.find(myquery)
         for x in mydoc:
-            print(f"Vendedor: {x['nome_vendedor']}, Data de Cadastro: {x['data_cadastro']}")
+            print(f"Vendedor: {x['nome_vendedor']}, Data de Cadastro: {x['data_cadastro']}, Avaliação: {x['avaliacao_final']}")
 
 def update_vendedor(nome_vendedor):
     global db
@@ -215,3 +215,52 @@ def remover_produto():
             print("O vendedor não possui produtos cadastrados.")
     else:
         print(f"Vendedor com o nome '{nome_vendedor}' não encontrado.")
+
+def adicionar_avaliacao():
+    global db
+    mycol_vendedor = db.Vendedor
+
+    vendedores = list(mycol_vendedor.find())
+    
+    if not vendedores:
+        print("Não existem vendedores cadastrados.")
+        return
+
+    print("Lista de vendedores:")
+    for i, vendedor in enumerate(vendedores, 1):
+        print(f"{i}. {vendedor['nome_vendedor']}")
+
+    while True:
+        try:
+            vendedor_id = int(input("Selecione o vendedor (digite o número): "))
+            if 1 <= vendedor_id <= len(vendedores):
+                break
+            else:
+                print("Número inválido. Tente novamente.")
+        except ValueError:
+            print("Número inválido. Tente novamente.")
+
+    vendedor_selecionado = vendedores[vendedor_id - 1]
+    nome_vendedor = vendedor_selecionado["nome_vendedor"]
+
+    if "avaliacoes" not in vendedor_selecionado:
+        vendedor_selecionado["avaliacoes"] = []
+
+    try:
+        nota_avaliacao = float(input("Digite a nota da avaliação (0 a 10): "))
+        if 0 <= nota_avaliacao <= 10:
+            vendedor_selecionado["avaliacoes"].append(nota_avaliacao)
+
+            # Calcular a avaliação final (média das avaliações)
+            avaliacao_final = sum(vendedor_selecionado["avaliacoes"]) / len(vendedor_selecionado["avaliacoes"])
+            vendedor_selecionado["avaliacao_final"] = avaliacao_final
+
+            newvalues = {"$set": vendedor_selecionado}
+            mycol_vendedor.update_one({"_id": vendedor_selecionado["_id"]}, newvalues)
+
+            print(f"Avaliação adicionada ao vendedor '{nome_vendedor}' com sucesso.")
+            print(f"Avaliação Final: {avaliacao_final:.2f}")
+        else:
+            print("A nota da avaliação deve estar no intervalo de 0 a 10.")
+    except ValueError:
+        print("Nota de avaliação inválida. Deve ser um número entre 0 e 10.")

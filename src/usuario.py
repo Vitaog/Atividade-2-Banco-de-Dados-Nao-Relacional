@@ -129,6 +129,13 @@ def update_usuario(cpf):
             mydoc["end"] = end 
         newvalues = { "$set": mydoc }
         mycol.update_one(myquery, newvalues)
+    
+def get_lista_produtos():
+    global db
+    produto_col = db.Produto
+    produtos = produto_col.find()
+    lista_produtos = [produto["nome_produto"] for produto in produtos]
+    return lista_produtos
 
 def add_favorito(cpf):
     global db
@@ -137,20 +144,39 @@ def add_favorito(cpf):
     mydoc = mycol.find_one(myquery)
 
     if mydoc:
-        produto = input("Digite o nome do produto que deseja adicionar aos favoritos: ")
-        data = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        favorito = {"produto": produto, "data": data}
-        
-        if "favoritos" in mydoc:
-            mydoc["favoritos"].append(favorito)
-        else:
-            mydoc["favoritos"] = [favorito]
+        lista_produtos = get_lista_produtos()
 
-        newvalues = {"$set": mydoc}
-        mycol.update_one(myquery, newvalues)
-        print(f"Produto '{produto}' adicionado aos favoritos do usuário com CPF {cpf}")
+        if lista_produtos:
+            print("Produtos disponíveis:")
+            for i, produto in enumerate(lista_produtos, 1):
+                print(f"{i}. {produto}")
+
+            produto_idx = input("Digite o número do produto que deseja adicionar aos favoritos: ")
+
+            try:
+                produto_idx = int(produto_idx)
+                if 1 <= produto_idx <= len(lista_produtos):
+                    produto = lista_produtos[produto_idx - 1]
+                    data = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                    favorito = {"produto": produto, "data": data}
+
+                    if "favoritos" in mydoc:
+                        mydoc["favoritos"].append(favorito)
+                    else:
+                        mydoc["favoritos"] = [favorito]
+
+                    newvalues = {"$set": mydoc}
+                    mycol.update_one(myquery, newvalues)
+                    print(f"Produto '{produto}' adicionado aos favoritos do usuário com CPF {cpf}")
+                else:
+                    print("Número de produto inválido.")
+            except ValueError:
+                print("Entrada inválida. Por favor, digite o número do produto.")
+        else:
+            print("Não há produtos disponíveis.")
     else:
         print(f"Usuário com CPF {cpf} não encontrado")
+
 
 
 def delete_favorito(cpf):
@@ -160,16 +186,30 @@ def delete_favorito(cpf):
     mydoc = mycol.find_one(myquery)
 
     if mydoc:
-        produto = input("Digite o nome do produto que deseja remover dos favoritos: ")
-        if "favoritos" in mydoc:
-            for x in mydoc["favoritos"]:
-                if x["produto"] == produto:
-                    mydoc["favoritos"].remove(x)
+        if "favoritos" in mydoc and mydoc["favoritos"]:
+            print("Produtos nos favoritos do usuário:")
+            for i, favorito in enumerate(mydoc["favoritos"], 1):
+                print(f"{i}. {favorito['produto']}")
+
+            produto_idx = input("Digite o número do produto que deseja remover dos favoritos: ")
+
+            try:
+                produto_idx = int(produto_idx)
+                if 1 <= produto_idx <= len(mydoc["favoritos"]):
+                    produto = mydoc["favoritos"][produto_idx - 1]["produto"]
+                    mydoc["favoritos"].pop(produto_idx - 1) 
                     newvalues = {"$set": mydoc}
                     mycol.update_one(myquery, newvalues)
                     print(f"Produto '{produto}' removido dos favoritos do usuário com CPF {cpf}")
+                else:
+                    print("Número de produto inválido.")
+            except ValueError:
+                print("Entrada inválida. Por favor, digite o número do produto.")
         else:
-            print(f"Usuário com CPF {cpf} não encontrado")
+            print("O usuário não possui produtos nos favoritos.")
+    else:
+        print(f"Usuário com CPF {cpf} não encontrado")
+
 
 def add_compra(cpf):
     global db

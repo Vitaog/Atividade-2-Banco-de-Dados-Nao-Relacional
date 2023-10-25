@@ -14,7 +14,12 @@ def delete_usuario(cpf):
     mycol = db.Usuário
     myquery = {"cpf" : cpf}
     mydoc = mycol.delete_one(myquery)
-    print(f"Usuário com o cpf {cpf} deletado com sucesso",mydoc)
+
+    if mydoc.deleted_count == 0:
+        print(f"Usuário com o CPF {cpf} não encontrado")
+    else:
+        print(f"Usuário com o CPF {cpf} deletado com sucesso")
+
 
 def create_usuario():
     global db
@@ -56,9 +61,11 @@ def read_usuario(cpf):
             print(f"Nome: {x["nome"]} CPF: {x["cpf"]}")
     else:
         myquery = {"cpf": cpf}
-        mydoc = mycol.find(myquery)
-        for x in mydoc:
-            print(x)
+        mydoc = mycol.find_one(myquery)
+        if mydoc:
+            print(f"Nome: {mydoc["nome"]} {mydoc["sobrenome"]}, CPF: {mydoc["cpf"]}, Endereço: {mydoc["end"]}, Favoritos: {mydoc["favoritos"]}, Compras: {mydoc["compra"]}")
+        else:
+           print(f"Usuário com CPF {cpf} não encontrado") 
 
 def update_usuario(cpf):
     global db
@@ -66,42 +73,45 @@ def update_usuario(cpf):
     mycol = db.Usuário
     myquery = {"cpf": cpf}
     mydoc = mycol.find_one(myquery)
-    print("Dados do usuário: ",mydoc)
-    nome = input("Mudar Nome: (Digite o nome ou clique ENTER para manter o mesmo nome) ")
-    if len(nome):
-        mydoc["nome"] = nome
+    if mydoc is None:
+        print(f"Usuário com CPF {cpf} não encontrado")  
+    else:
+        print("Dados do usuário: ",mydoc)
+        nome = input("Mudar Nome: (Digite o nome ou clique ENTER para manter o mesmo nome) ")
+        if len(nome):
+            mydoc["nome"] = nome
 
-    sobrenome = input("Mudar Sobrenome: (Digite o sobrenome ou clique ENTER para manter o mesmo sobrenome)")
-    if len(sobrenome):
-        mydoc["sobrenome"] = sobrenome
+        sobrenome = input("Mudar Sobrenome: (Digite o sobrenome ou clique ENTER para manter o mesmo sobrenome)")
+        if len(sobrenome):
+            mydoc["sobrenome"] = sobrenome
 
-    cpf = input("Mudar CPF: (Digite o CPF ou clique ENTER para manter o mesmo CPF)")
-    if len(cpf):
-        mydoc["cpf"] = cpf
+        cpf = input("Mudar CPF: (Digite o CPF ou clique ENTER para manter o mesmo CPF)")
+        if len(cpf):
+            mydoc["cpf"] = cpf
 
-    end = input("Mudar endereço: (Digite  S para atualizar ou clique ENTER para manter o mesmo endereço)")
-    if len(end):
-        end = []
-        while (key != 'N' and key !='n'):
-            rua = input("Rua: ")
-            num = input("Num: ")
-            bairro = input("Bairro: ")
-            cidade = input("Cidade: ")
-            estado = input("Estado: ")
-            cep = input("CEP: ")
-            endereco = {        
-                "rua":rua,
-                "num": num,
-                "bairro": bairro,
-                "cidade": cidade,
-                "estado": estado,
-                "cep": cep
-            }
-            end.append(endereco)
-            key = input("Deseja cadastrar um novo endereço (S/N)? ")
-        mydoc["end"] = end 
-    newvalues = { "$set": mydoc }
-    mycol.update_one(myquery, newvalues)
+        end = input("Mudar endereço: (Digite  S para atualizar ou clique ENTER para manter o mesmo endereço)")
+        if len(end):
+            end = []
+            while (key != 'N' and key !='n'):
+                rua = input("Rua: ")
+                num = input("Num: ")
+                bairro = input("Bairro: ")
+                cidade = input("Cidade: ")
+                estado = input("Estado: ")
+                cep = input("CEP: ")
+                endereco = {        
+                    "rua":rua,
+                    "num": num,
+                    "bairro": bairro,
+                    "cidade": cidade,
+                    "estado": estado,
+                    "cep": cep
+                }
+                end.append(endereco)
+                key = input("Deseja cadastrar um novo endereço (S/N)? ")
+            mydoc["end"] = end 
+        newvalues = { "$set": mydoc }
+        mycol.update_one(myquery, newvalues)
 
 def add_favorito(cpf):
     global db

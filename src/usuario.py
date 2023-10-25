@@ -2,7 +2,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from datetime import datetime 
 
-uri = "" # Insira a url de sua base de dados
+uri =  "" # Insira a url de sua base de dados
 
 # Cria um novo cliente e conecta ao servidor
 client = MongoClient(uri, server_api=ServerApi('1'))
@@ -63,9 +63,26 @@ def read_usuario(cpf):
         myquery = {"cpf": cpf}
         mydoc = mycol.find_one(myquery)
         if mydoc:
-            print(f"Nome: {mydoc["nome"]} {mydoc["sobrenome"]}, CPF: {mydoc["cpf"]}, Endereço: {mydoc["end"]}, Favoritos: {mydoc["favoritos"]}, Compras: {mydoc["compra"]}")
+            nome = mydoc.get("nome", "Nome não disponível")
+            sobrenome = mydoc.get("sobrenome", "Sobrenome não disponível")
+            cpf = mydoc.get("cpf", "CPF não disponível")
+            end = mydoc.get("end", "Endereço não disponível")
+            favoritos = mydoc.get("favoritos")
+            compra = mydoc.get("compra")
+            
+            print(f"Nome: {nome} {sobrenome}, CPF: {cpf}, Endereço: {end}")
+            
+            if favoritos is None:
+                print("Não possui favoritos")
+            elif favoritos:
+                print(f"Favoritos: {favoritos}")
+            
+            if compra is None:
+                print("Não possui compras")
+            elif compra:
+                print(f"Compras: {compra}")
         else:
-           print(f"Usuário com CPF {cpf} não encontrado") 
+           print(f"Usuário com CPF {cpf} não encontrado")
 
 def update_usuario(cpf):
     global db

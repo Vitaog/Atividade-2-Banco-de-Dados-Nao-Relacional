@@ -24,19 +24,49 @@ def add_vendedor():
     x = mycol.insert_one(vendedor)
     print("Vendedor inserido com ID ", x.inserted_id)
 
-def read_vendedor(nome_vendedor):
+def listar_vendedores():
     global db
     mycol = db.Vendedor
     print("Vendedores existentes: ")
-    if not len(nome_vendedor):
-        mydoc = mycol.find()
-        for vendedor in mydoc:
-            print(f" {vendedor['nome_vendedor']}")
-    else:
-        myquery = {"nome_vendedor": nome_vendedor}
-        mydoc = mycol.find(myquery)
-        for x in mydoc:
-            print(f"Vendedor: {x['nome_vendedor']}, Data de Cadastro: {x['data_cadastro']}, Avaliação: {x['avaliacao_final']}")
+    mydoc = mycol.find()
+    vendedores = list(mydoc)
+    
+    for i, vendedor in enumerate(vendedores, 1):
+        print(f"{i}. {vendedor['nome_vendedor']}, Avaliação: {vendedor.get('avaliacao_final', 'Não tem avaliação')}")
+
+    return vendedores
+
+def read_vendedor():
+    global db
+    mycol = db.Vendedor
+    vendedores = listar_vendedores()
+    
+    if not vendedores:
+        print("Não existem vendedores cadastrados.")
+        return
+    
+    while True:
+        try:
+            vendedor_id = int(input("Selecione um vendedor por ID (digite o ID) ou pressione Enter para voltar: "))
+            if 1 <= vendedor_id <= len(vendedores):
+                vendedor_selecionado = vendedores[vendedor_id - 1]
+                print(f"Vendedor selecionado: {vendedor_selecionado['nome_vendedor']}, Avaliação: {vendedor_selecionado.get('avaliacao_final', 'Não tem avaliação')}")
+                
+                if "produtos" in vendedor_selecionado:
+                    print("Produtos do vendedor:")
+                    for produto in vendedor_selecionado["produtos"]:
+                        print(f"Nome do Produto: {produto['nome_produto']}, Descrição: {produto['descricao']}, Preço: R$ {produto['preco']}, Quantidade disponível: {produto['quantidade_disponivel']}")
+                else:
+                    print("O vendedor não possui produtos cadastrados.")
+                
+                break
+            elif vendedor_id == 0:
+                break
+            else:
+                print("ID inválido. Tente novamente.")
+        except ValueError:
+            print("ID inválido. Tente novamente.")
+
 
 def update_vendedor(nome_vendedor):
     global db

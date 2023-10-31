@@ -211,6 +211,71 @@ def delete_favorito(cpf):
         print(f"Usuário com CPF {cpf} não encontrado")
 
 
+def listar_produtos_e_vendedores():
+    global db
+    produto_col = db.Produto
+    vendedor_col = db.Vendedor
+
+    produtos = list(produto_col.find())
+    
+    if not produtos:
+        print("Não há produtos disponíveis.")
+        return None, None
+
+    print("Produtos disponíveis:")
+    for i, produto in enumerate(produtos, 1):
+        print(f"{i}. {produto['nome_produto']}")
+
+    produto_idx = input("Digite o número do produto que deseja adicionar à compra: ")
+
+    try:
+        produto_idx = int(produto_idx)
+        if 1 <= produto_idx <= len(produtos):
+            produto_selecionado = produtos[produto_idx - 1]
+            print(f"Produto selecionado: {produto_selecionado['nome_produto']}")
+        else:
+            print("Número de produto inválido.")
+            return None, None
+    except ValueError:
+        print("Entrada inválida. Por favor, digite o número do produto.")
+        return None, None
+
+    vendedores_disponiveis = []
+
+    vendedor_idx = 1
+
+    print("Vendedores disponíveis para o produto:")
+    vendedor_idx_mapping = {}  
+    for vendedor in vendedor_col.find():
+        for produto in vendedor.get("produtos", []):
+            if produto.get("nome_produto") == produto_selecionado["nome_produto"]:
+                vendedores_disponiveis.append(vendedor)
+                print(f"{vendedor_idx}. {vendedor['nome_vendedor']}")
+                vendedor_idx_mapping[vendedor_idx] = vendedor
+                vendedor_idx += 1
+
+    if not vendedores_disponiveis:
+        print("Este produto não possui vendedores disponíveis.")
+        return None, None
+
+    vendedor_idx = input("Digite o número do vendedor desejado: ")
+
+    try:
+        vendedor_idx = int(vendedor_idx)
+        if vendedor_idx in vendedor_idx_mapping:
+            vendedor_selecionado = vendedor_idx_mapping[vendedor_idx]
+            print(f"Vendedor selecionado: {vendedor_selecionado['nome_vendedor']}")
+        else:
+            print("Número de vendedor inválido.")
+            return None, None
+    except ValueError:
+        print("Entrada inválida. Por favor, digite o número do vendedor.")
+        return None, None
+
+    return produto_selecionado, vendedor_selecionado
+
+
+
 def add_compra(cpf):
     global db
     mycol = db.Usuário
@@ -218,78 +283,62 @@ def add_compra(cpf):
     mydoc = mycol.find_one(myquery)
 
     if mydoc:
-        nomeProduto = input("Digite o nome do produto: ")
-        precoUnitario = float(input("Digite o preço unitário: "))
-        quantidade = int(input("Digite a quantidade: "))
-        subTotal = precoUnitario * quantidade
-        descricaoProduto = input("Digite a descrição do produto: ")
-        vendedor = input("Digite o nome do vendedor: ")
-        totalCompra = subTotal
-        dataCompra = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        compras = mydoc.get("compra", [])
 
-        compra = {
-            "produto": {
-                "nomeProduto": nomeProduto,
-                "precoUnitario": precoUnitario,
-                "quantidade": quantidade,
-                "subTotal": subTotal,
-                "descricaoProduto": descricaoProduto,
-                "vendedor": vendedor
-            },
-            "totalCompra": totalCompra,
-            "dataCompra": dataCompra
-        }
+        totalCompra = 0  # Inicializa o total da compra
 
-        if "compra" in mydoc:
-            mydoc["compra"].append(compra)
-        else:
-            mydoc["compra"] = [compra]
+        compra_atual = {"produtos": []}
 
+        while True:
+            produto_selecionado, vendedor_selecionado = listar_produtos_e_vendedores()
+
+            if produto_selecionado and vendedor_selecionado:
+                nomeProduto = produto_selecionado["nome_produto"]
+                vendedor_produtos = vendedor_selecionado.get("produtos", [])
+                
+                # Encontre o preço do produto no vendedor
+                for produto_vendedor in vendedor_produtos:
+                    if produto_vendedor.get("nome_produto") == nomeProduto:
+                        precoUnitario = produto_vendedor.get("preco", 0)
+                        break
+                else:
+                    precoUnitario = 0
+
+                quantidade = int(input("Digite a quantidade: "))
+                subTotal = precoUnitario * quantidade
+                descricaoProduto = produto_selecionado.get("descricao", "")
+                vendedor = vendedor_selecionado["nome_vendedor"]
+
+                produto = {
+                    "nomeProduto": nomeProduto,
+                    "precoUnitario": precoUnitario,
+                    "quantidade": quantidade,
+                    "subTotal": subTotal,
+                    "descricaoProduto": descricaoProduto,
+                    "vendedor": vendedor
+                }
+
+                compra_atual["produtos"].append(produto)
+
+                totalCompra += subTotal  # Adiciona o subTotal ao total da compra
+
+                print(f"Produto '{nomeProduto}' adicionado à compra do usuário com CPF {cpf}")
+
+                continuar = input("Deseja adicionar outro produto à compra (S/N)? ")
+                if continuar.lower() != 's':
+                    break
+
+        # Atualiza o total da compra na compra atual
+        compra_atual["totalCompra"] = totalCompra
+
+        compras.append(compra_atual)
+
+        mydoc["compra"] = compras
         newvalues = {"$set": mydoc}
         mycol.update_one(myquery, newvalues)
-        print(f"Compra adicionada para o usuário com CPF {cpf}")
     else:
         print(f"Usuário com CPF {cpf} não encontrado")
 
-def add_compra(cpf):
-    global db
-    mycol = db.Usuário
-    myquery = {"cpf": cpf}
-    mydoc = mycol.find_one(myquery)
-
-    if mydoc:
-        nomeProduto = input("Digite o nome do produto: ")
-        precoUnitario = float(input("Digite o preço unitário: "))
-        quantidade = int(input("Digite a quantidade: "))
-        subTotal = precoUnitario * quantidade
-        descricaoProduto = input("Digite a descrição do produto: ")
-        vendedor = input("Digite o nome do vendedor: ")
-        totalCompra = subTotal
-        dataCompra = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-
-        compra = {
-            "produto": {
-                "nomeProduto": nomeProduto,
-                "precoUnitario": precoUnitario,
-                "quantidade": quantidade,
-                "subTotal": subTotal,
-                "descricaoProduto": descricaoProduto,
-                "vendedor": vendedor
-            },
-            "totalCompra": totalCompra,
-            "dataCompra": dataCompra
-        }
-
-        if "compra" in mydoc:
-            mydoc["compra"].append(compra)
-        else:
-            mydoc["compra"] = [compra]
-
-        newvalues = {"$set": mydoc}
-        mycol.update_one(myquery, newvalues)
-        print(f"Compra adicionada para o usuário com CPF {cpf}")
-    else:
-        print(f"Usuário com CPF {cpf} não encontrado")
 
 def delete_compra(cpf):
     global db

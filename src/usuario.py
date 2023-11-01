@@ -202,79 +202,162 @@ def get_lista_produtos():
     lista_produtos = [produto["nome_produto"] for produto in produtos]
     return lista_produtos
 
-def add_favorito(cpf):
+def add_favorito():
     global db
     mycol = db.Usuário
-    myquery = {"cpf": cpf}
-    mydoc = mycol.find_one(myquery)
 
-    if mydoc:
-        lista_produtos = get_lista_produtos()
+    cursor = mycol.find()
+    user_dict = {}
+    for user in cursor:
+        print(f"Nome: {user['nome']} CPF: {user['cpf']}")
+        user_dict[user['cpf']] = user
 
-        if lista_produtos:
-            print("Produtos disponíveis:")
-            for i, produto in enumerate(lista_produtos, 1):
-                print(f"{i}. {produto}")
+    if not user_dict:
+        print("Não há nenhum usuário cadastrado no Mercado Livre.")
+        return
 
-            produto_idx = input("Digite o número do produto que deseja adicionar aos favoritos: ")
+    cpf = input("Digite o CPF do usuário ao qual deseja adicionar um favorito (ou deixe em branco para sair): ")
 
-            try:
-                produto_idx = int(produto_idx)
-                if 1 <= produto_idx <= len(lista_produtos):
-                    produto = lista_produtos[produto_idx - 1]
-                    data = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                    favorito = {"produto": produto, "data": data}
+    if not cpf:
+        return
 
-                    if "favoritos" in mydoc:
-                        mydoc["favoritos"].append(favorito)
+    if cpf not in user_dict:
+        print(f"Usuário com CPF {cpf} não encontrado")
+        return
+
+    lista_produtos = get_lista_produtos()
+
+    if lista_produtos:
+        print("Produtos disponíveis:")
+        for i, produto in enumerate(lista_produtos, 1):
+            print(f"{i}. {produto}")
+
+        produto_idx = input("Digite o número do produto que deseja adicionar aos favoritos: ")
+
+        try:
+            produto_idx = int(produto_idx)
+            if 1 <= produto_idx <= len(lista_produtos):
+                produto = lista_produtos[produto_idx - 1]
+
+                vendedores_col = db.Vendedor
+                produto_col = db.Produto
+
+                produto_info = produto_col.find_one({"nome_produto": produto})
+                if produto_info:
+                    nome_produto = produto_info["nome_produto"]
+                    descricao = produto_info["descricao"]
+
+                    vendedores_com_produto = []
+                    for vendedor in vendedores_col.find():
+                        for prod in vendedor.get("produtos", []):
+                            if prod.get("nome_produto") == nome_produto and prod.get("descricao") == descricao:
+                                preco = prod.get("preco")
+                                vendedores_com_produto.append((vendedor, preco))
+
+                    if vendedores_com_produto:
+                        print("Vendedores com este produto:")
+                        for i, (vendedor, preco) in enumerate(vendedores_com_produto, 1):
+                            print(f"{i}. {vendedor['nome_vendedor']}, Preço: R$ {preco:.2f}")
+
+                        vendedor_idx = input("Digite o número do vendedor que deseja selecionar: ")
+
+                        try:
+                            vendedor_idx = int(vendedor_idx)
+                            if 1 <= vendedor_idx <= len(vendedores_com_produto):
+                                vendedor_selecionado, preco = vendedores_com_produto[vendedor_idx - 1]
+                                data = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+                                myquery = {"cpf": cpf}
+                                mydoc = mycol.find_one(myquery)
+
+                                if mydoc:
+                                    if "favoritos" in mydoc:
+                                        mydoc["favoritos"].append({
+                                            "produto": nome_produto,
+                                            "preco": preco,
+                                            "vendedor": vendedor_selecionado["nome_vendedor"],
+                                            "data": data
+                                        })
+                                    else:
+                                        mydoc["favoritos"] = [{
+                                            "produto": nome_produto,
+                                            "preco": preco,
+                                            "vendedor": vendedor_selecionado["nome_vendedor"],
+                                            "data": data
+                                        }]
+
+                                    newvalues = {"$set": mydoc}
+                                    mycol.update_one(myquery, newvalues)
+
+                                    print(f"Produto '{nome_produto}' adicionado aos favoritos do usuário com CPF {cpf}.")
+                                    print(f"Selecionou o vendedor: {vendedor_selecionado['nome_vendedor']}")
+                                    print(f"Preço do produto: R$ {preco:.2f}")
+                                else:
+                                    print(f"Usuário com CPF {cpf} não encontrado.")
+                            else:
+                                print("Número de vendedor inválido.")
+                        except ValueError:
+                            print("Entrada inválida. Por favor, digite o número do vendedor.")
                     else:
-                        mydoc["favoritos"] = [favorito]
-
-                    newvalues = {"$set": mydoc}
-                    mycol.update_one(myquery, newvalues)
-                    print(f"Produto '{produto}' adicionado aos favoritos do usuário com CPF {cpf}")
+                        print("Nenhum vendedor cadastrou este produto.")
                 else:
-                    print("Número de produto inválido.")
-            except ValueError:
-                print("Entrada inválida. Por favor, digite o número do produto.")
-        else:
-            print("Não há produtos disponíveis.")
+                    print(f"Produto com nome {produto} não encontrado.")
+            else:
+                print("Número de produto inválido.")
+        except ValueError:
+            print("Entrada inválida. Por favor, digite o número do produto.")
     else:
-        print(f"Usuário com CPF {cpf} não encontrado")
+        print("Não há produtos disponíveis.")
 
-
-
-def delete_favorito(cpf):
+def delete_favorito():
     global db
     mycol = db.Usuário
-    myquery = {"cpf": cpf}
-    mydoc = mycol.find_one(myquery)
 
-    if mydoc:
-        if "favoritos" in mydoc and mydoc["favoritos"]:
-            print("Produtos nos favoritos do usuário:")
-            for i, favorito in enumerate(mydoc["favoritos"], 1):
-                print(f"{i}. {favorito['produto']}")
+    cursor = mycol.find()
+    user_dict = {}
+    for user in cursor:
+        print(f"Nome: {user['nome']} CPF: {user['cpf']}")
+        user_dict[user['cpf']] = user
 
-            produto_idx = input("Digite o número do produto que deseja remover dos favoritos: ")
+    if not user_dict:
+        print("Não há nenhum usuário cadastrado no Mercado Livre.")
+        return
 
-            try:
-                produto_idx = int(produto_idx)
-                if 1 <= produto_idx <= len(mydoc["favoritos"]):
-                    produto = mydoc["favoritos"][produto_idx - 1]["produto"]
-                    mydoc["favoritos"].pop(produto_idx - 1) 
-                    newvalues = {"$set": mydoc}
-                    mycol.update_one(myquery, newvalues)
-                    print(f"Produto '{produto}' removido dos favoritos do usuário com CPF {cpf}")
-                else:
-                    print("Número de produto inválido.")
-            except ValueError:
-                print("Entrada inválida. Por favor, digite o número do produto.")
-        else:
-            print("O usuário não possui produtos nos favoritos.")
-    else:
+    cpf = input("Digite o CPF do usuário do qual deseja remover um favorito (ou deixe em branco para sair): ")
+
+    if not cpf:
+        return
+
+    if cpf not in user_dict:
         print(f"Usuário com CPF {cpf} não encontrado")
+        return
 
+    mydoc = user_dict[cpf]
+
+    if "favoritos" in mydoc and mydoc["favoritos"]:
+        print("Favoritos do usuário:")
+        for i, favorito in enumerate(mydoc["favoritos"], 1):
+            print(f"{i}. {favorito['produto']} (Vendedor: {favorito['vendedor']}, Preço: R$ {favorito['preco']:.2f})")
+
+        favorito_idx = input("Digite o número do favorito que deseja remover: ")
+
+        try:
+            favorito_idx = int(favorito_idx)
+            if 1 <= favorito_idx <= len(mydoc["favoritos"]):
+                removed_favorito = mydoc["favoritos"].pop(favorito_idx - 1)
+                newvalues = {"$set": mydoc}
+                mycol.update_one({"cpf": cpf}, newvalues)
+
+                print(f"Favorito removido com sucesso:")
+                print(f"Produto: {removed_favorito['produto']}")
+                print(f"Vendedor: {removed_favorito['vendedor']}")
+                print(f"Preço: R$ {removed_favorito['preco']:.2f}")
+            else:
+                print("Número de favorito inválido.")
+        except ValueError:
+            print("Entrada inválida. Por favor, digite o número do favorito.")
+    else:
+        print("O usuário não possui favoritos cadastrados.")
 
 def listar_produtos_e_vendedores():
     global db
@@ -393,7 +476,6 @@ def add_compra(cpf):
                 if continuar.lower() != 's':
                     break
 
-       
         compra_atual["totalCompra"] = totalCompra
 
         compras.append(compra_atual)

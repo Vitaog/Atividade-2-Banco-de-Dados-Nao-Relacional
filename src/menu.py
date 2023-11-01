@@ -50,14 +50,12 @@ while (key != 'S' and key != 's'):
         
         elif (sub == '5'):
             print("|--------------------------------------------------------------|")
-            cpf = input("Digite o cpf do usuário que deseja adicionar favoritos: ")
-            add_favorito(cpf)
+            add_favorito()
             print ("")
         
         elif (sub == '6'):
             print("|--------------------------------------------------------------|")
-            cpf = input("Digite o cpf do usuário que deseja remover favoritos: ")
-            delete_favorito(cpf)
+            delete_favorito()
             print ("")
 
         elif (sub == '7'):

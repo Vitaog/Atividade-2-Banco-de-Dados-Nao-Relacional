@@ -47,7 +47,10 @@ def read_vendedor():
     
     while True:
         try:
-            vendedor_id = int(input("Selecione um vendedor por ID (digite o ID) ou pressione Enter para voltar: "))
+            vendedor_id_input = input("Selecione um vendedor por ID (digite o ID) ou pressione Enter para voltar: ")
+            if vendedor_id_input == "":
+                break  
+            vendedor_id = int(vendedor_id_input)
             if 1 <= vendedor_id <= len(vendedores):
                 vendedor_selecionado = vendedores[vendedor_id - 1]
                 print(f"Vendedor selecionado: {vendedor_selecionado['nome_vendedor']}, Avaliação: {vendedor_selecionado.get('avaliacao_final', 'Não tem avaliação')}")
@@ -67,39 +70,71 @@ def read_vendedor():
         except ValueError:
             print("ID inválido. Tente novamente.")
 
-
-def update_vendedor(nome_vendedor):
+def update_vendedor():
     global db
     mycol = db.Vendedor
-    myquery = {"nome_vendedor": nome_vendedor}
-    mydoc = mycol.find_one(myquery)
 
-    if mydoc:
-        print("Dados do vendedor:")
-        print(f"{mydoc['nome_vendedor']}, Data de Cadastro: {mydoc['data_cadastro']}")
+    vendedores = listar_vendedores()
 
-        novo_nome = input("Mudar Nome do Vendedor: (Digite o novo nome ou pressione ENTER para manter o mesmo nome) ")
-        if novo_nome:
-            mydoc['nome_vendedor'] = novo_nome
+    if not vendedores:
+        print("Não existem vendedores cadastrados.")
+        return
 
-        newvalues = {"$set": mydoc}
-        mycol.update_one(myquery, newvalues)
-        print(f"Vendedor atualizado com sucesso!")
+    while True:
+        try:
+            vendedor_id = int(input("Selecione um vendedor por ID (digite o ID) ou pressione Enter para voltar: "))
+            if vendedor_id == 0:
+                return  
+            if 1 <= vendedor_id <= len(vendedores):
+                vendedor_selecionado = vendedores[vendedor_id - 1]
+                nome_vendedor = vendedor_selecionado["nome_vendedor"]
+                print(f"Vendedor selecionado: {nome_vendedor}")
 
-    else:
-        print(f"Vendedor com o nome '{nome_vendedor}' não encontrado")
+                novo_nome = input("Mudar Nome do Vendedor: (Digite o novo nome ou pressione ENTER para manter o mesmo nome) ")
+                if novo_nome:
+                    vendedor_selecionado['nome_vendedor'] = novo_nome
 
-def delete_vendedor(nome_vendedor):
+                newvalues = {"$set": vendedor_selecionado}
+                mycol.update_one({"_id": vendedor_selecionado["_id"]}, newvalues)
+                print(f"Vendedor '{nome_vendedor}' atualizado com sucesso!")
+                break
+            else:
+                print("ID inválido. Tente novamente.")
+        except ValueError:
+            print("ID inválido. Tente novamente.")
+
+
+def delete_vendedor():
     global db
     mycol = db.Vendedor
-    myquery = {"nome_vendedor": nome_vendedor}
-    mydoc = mycol.find_one(myquery)
 
-    if mydoc:
-        mycol.delete_one(myquery)
-        print(f"Vendedor com o nome '{nome_vendedor}' foi removido com sucesso")
-    else:
-        print(f"Vendedor com o nome '{nome_vendedor}' não encontrado")
+    vendedores = listar_vendedores()
+
+    if not vendedores:
+        print("Não existem vendedores cadastrados.")
+        return
+
+
+    while True:
+        try:
+            vendedor_id = int(input("Selecione um vendedor por ID (digite o ID) ou pressione Enter para voltar: "))
+            if vendedor_id == 0:
+                return  
+            if 1 <= vendedor_id <= len(vendedores):
+                vendedor_selecionado = vendedores[vendedor_id - 1]
+                nome_vendedor = vendedor_selecionado["nome_vendedor"]
+                print(f"Vendedor selecionado: {nome_vendedor}")
+
+                confirma = input(f"Tem certeza de que deseja remover o vendedor '{nome_vendedor}'? (S/N): ")
+                if confirma.lower() == "s":
+                    mycol.delete_one({"_id": vendedor_selecionado["_id"]})
+                    print(f"Vendedor '{nome_vendedor}' removido com sucesso.")
+                break
+            else:
+                print("ID inválido. Tente novamente.")
+        except ValueError:
+            print("ID inválido. Tente novamente.")
+
 
 def cadastro_produto():
     global db

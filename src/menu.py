@@ -14,17 +14,17 @@ while (key != 'S' and key != 's'):
     print ("")
 
     if (key == '1'):
-        print("|-------------------Menu do Usuário---------------------------|")
+        print("|-------------------Menu do Usuário-----------------------------|")
         print("1-Create Usuário")
         print("2-Read Usuário")
         print("3-Update Usuário")
         print("4-Delete Usuário")
-        print("|--------------------Funcionalidades--------------------------|")
+        print("|--------------------Funcionalidades----------------------------|")
         print("5-Adicionar Favoritos")
         print("6-Remover Favoritos")
         print("7-Adicionar Compra")
         print("8-Cancelar Compra")
-        print("|--------------------------------------------------------------|")
+        print("|---------------------------------------------------------------|")
         sub = input("Digite a opção desejada? (V para voltar) ")
         print ("")
 
@@ -69,18 +69,18 @@ while (key != 'S' and key != 's'):
             print ("")
             
     elif (key == '2'):
-         print("|-------------------Menu do Vendedor---------------------------|")
+         print("|-------------------Menu do Vendedor----------------------------|")
          print("1-Create Vendedor")
          print("2-Read Vendedor")
          print("3-Update Vendedor")
          print("4-Delete Vendedor")
-         print("|--------------------Funcionalidades--------------------------|")
+         print("|--------------------Funcionalidades----------------------------|")
          print("5-Adicionar Produto")
          print("6-Listar Produtos")
          print("7-Atualizar Produto")
          print("8-Remover Produto")
          print("9-Adicionar Avaliação")
-         print("|--------------------------------------------------------------|")
+         print("|---------------------------------------------------------------|")
          sub = input("Digite a opção desejada? (V para voltar) ")
          print ("") 
 
@@ -96,14 +96,12 @@ while (key != 'S' and key != 's'):
 
          elif (sub == '3'):
              print("|--------------------------------------------------------------|")
-             nome = input("Digite o nome do vendedor que deseja atualizar: ")
-             update_vendedor(nome)
+             update_vendedor()
              print ("")   
 
          elif (sub == '4'):
              print("|--------------------------------------------------------------|")
-             nome = input("Digite o nome para deletar o vendedor desejado: ")
-             delete_vendedor(nome)
+             delete_vendedor()
              print ("")
             
          elif (sub == '5'):
@@ -138,16 +136,17 @@ while (key != 'S' and key != 's'):
 
 
     elif (key == '3'):
-        print("|----------------------Menu de Produtos------------------------|")
+        print("|----------------------Menu de Produtos-------------------------|")
         print("1-Create Produto")
         print("2-Read Produto")
         print("3-Update Produto")
         print("4-Delete Produto")
+        print("|---------------------------------------------------------------|")
         sub = input("Digite a opção desejada? (V para voltar) ")
         print ("")      
 
         if (sub == '1'):
-            print("|-------------------Criação de Produto------------------------|")
+            print("|-------------------Criação de Produto-------------------------|")
             add_produto()
             print ("")
 

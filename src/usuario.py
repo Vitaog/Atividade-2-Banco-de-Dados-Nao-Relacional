@@ -14,7 +14,7 @@ def delete_usuario():
     mycol = db.Usuário
 
     cursor = mycol.find()
-    user_dict = {}  # Um dicionário para mapear CPF para o usuário
+    user_dict = {}  
     for user in cursor:
         print(f"Nome: {user['nome']} CPF: {user['cpf']}")
         user_dict[user['cpf']] = user
@@ -73,7 +73,7 @@ def read_usuario():
     mycol = db.Usuário
 
     cursor = mycol.find()
-    user_dict = {} 
+    user_dict = {}
     for user in cursor:
         print(f"Nome: {user['nome']} CPF: {user['cpf']}")
         user_dict[user['cpf']] = user
@@ -100,17 +100,35 @@ def read_usuario():
     favoritos = mydoc.get("favoritos")
     compra = mydoc.get("compra")
 
-    print(f"Nome: {nome} {sobrenome}, CPF: {cpf}, Endereço: {end}")
+    print(f"Nome: {nome} {sobrenome}")
+    print(f"CPF: {cpf}")
+    print()
+
+    if end != "Endereço não disponível":
+        print("Endereço:")
+        for endereco in end:
+            print(f"Rua: {endereco['rua']}, Número: {endereco['num']}, Bairro: {endereco['bairro']}, Cidade: {endereco['cidade']}, Estado: {endereco['estado']}, CEP: {endereco['cep']}")
+            print()
 
     if favoritos is None:
         print("Não possui favoritos")
     elif favoritos:
-        print(f"Favoritos: {favoritos}")
+        print("Favoritos:")
+        for fav in favoritos:
+            print(f"Produto: {fav['produto']}, Preço: {fav['preco']}, Vendedor: {fav['vendedor']}, Data: {fav['data']}")
+            print()
 
     if compra is None:
         print("Não possui compras")
     elif compra:
-        print(f"Compras: {compra}")
+        print("Compras:")
+        for compra_info in compra:
+            print("Produtos da Compra:")
+            for produto_compra in compra_info['produtos']:
+                print(f"Nome do Produto:{produto_compra['nomeProduto']}, Preço Unitário: {produto_compra['precoUnitario']}, Quantidade: {produto_compra['quantidade']}, Subtotal: {produto_compra['subTotal']}, Descrição: {produto_compra['descricaoProduto']}, Vendedor: {produto_compra['vendedor']}")
+            print(f"Total da compra: {compra_info['totalCompra']}")
+            print(f"Data da Compra: {compra_info['dataCompra']}")
+            print()
 
 def update_usuario():
     global db
@@ -490,6 +508,7 @@ def add_compra():
                 break
 
     compra_atual["totalCompra"] = totalCompra
+    compra_atual["dataCompra"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     compras.append(compra_atual)
 
     mydoc["compra"] = compras

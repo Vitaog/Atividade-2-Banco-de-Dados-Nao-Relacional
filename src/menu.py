@@ -60,14 +60,12 @@ while (key != 'S' and key != 's'):
 
         elif (sub == '7'):
             print("|--------------------------------------------------------------|")
-            cpf = input("Digite o cpf do usuário que deseja adicionar compra: ")
-            add_compra(cpf)
+            add_compra()
             print ("")
         
         elif (sub == '8'):
             print("|--------------------------------------------------------------|")
-            cpf = input("Digite o cpf do usuário que deseja cancelar compra: ")
-            delete_compra(cpf)
+            delete_compra()
             print ("")
             
     elif (key == '2'):

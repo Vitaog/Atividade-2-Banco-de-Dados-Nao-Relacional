@@ -422,86 +422,127 @@ def listar_produtos_e_vendedores():
 
     return produto_selecionado, vendedor_selecionado
 
-
-
-def add_compra(cpf):
+def add_compra():
     global db
     mycol = db.Usuário
-    myquery = {"cpf": cpf}
-    mydoc = mycol.find_one(myquery)
 
-    if mydoc:
-        compras = mydoc.get("compra", [])
+    cursor = mycol.find()
+    user_dict = {}
+    
+    for user in cursor:
+        print(f"Nome: {user['nome']} CPF: {user['cpf']}")
+        user_dict[user['cpf']] = user
 
-        totalCompra = 0 
+    if not user_dict:
+        print("Não há nenhum usuário cadastrado no Mercado Livre.")
+        return
 
-        compra_atual = {"produtos": []}
+    cpf = input("Digite o CPF do usuário ao qual deseja adicionar uma compra (ou deixe em branco para sair): ")
 
-        while True:
-            produto_selecionado, vendedor_selecionado = listar_produtos_e_vendedores()
+    if not cpf:
+        return
 
-            if produto_selecionado and vendedor_selecionado:
-                nomeProduto = produto_selecionado["nome_produto"]
-                vendedor_produtos = vendedor_selecionado.get("produtos", [])
-                
-                
-                for produto_vendedor in vendedor_produtos:
-                    if produto_vendedor.get("nome_produto") == nomeProduto:
-                        precoUnitario = produto_vendedor.get("preco", 0)
-                        break
-                else:
-                    precoUnitario = 0
-
-                quantidade = int(input("Digite a quantidade: "))
-                subTotal = precoUnitario * quantidade
-                descricaoProduto = produto_selecionado.get("descricao", "")
-                vendedor = vendedor_selecionado["nome_vendedor"]
-
-                produto = {
-                    "nomeProduto": nomeProduto,
-                    "precoUnitario": precoUnitario,
-                    "quantidade": quantidade,
-                    "subTotal": subTotal,
-                    "descricaoProduto": descricaoProduto,
-                    "vendedor": vendedor
-                }
-
-                compra_atual["produtos"].append(produto)
-
-                totalCompra += subTotal  
-
-                print(f"Produto '{nomeProduto}' adicionado à compra do usuário com CPF {cpf}")
-
-                continuar = input("Deseja adicionar outro produto à compra (S/N)? ")
-                if continuar.lower() != 's':
-                    break
-
-        compra_atual["totalCompra"] = totalCompra
-
-        compras.append(compra_atual)
-
-        mydoc["compra"] = compras
-        newvalues = {"$set": mydoc}
-        mycol.update_one(myquery, newvalues)
-    else:
+    if cpf not in user_dict:
         print(f"Usuário com CPF {cpf} não encontrado")
+        return
 
+    mydoc = user_dict[cpf]
 
-def delete_compra(cpf):
+    compras = mydoc.get("compra", [])
+    totalCompra = 0
+    compra_atual = {"produtos": []}
+
+    while True:
+        produto_selecionado, vendedor_selecionado = listar_produtos_e_vendedores()
+
+        if produto_selecionado and vendedor_selecionado:
+            nomeProduto = produto_selecionado["nome_produto"]
+            vendedor_produtos = vendedor_selecionado.get("produtos", [])
+
+            for produto_vendedor in vendedor_produtos:
+                if produto_vendedor.get("nome_produto") == nomeProduto:
+                    precoUnitario = produto_vendedor.get("preco", 0)
+                    break
+            else:
+                precoUnitario = 0
+
+            quantidade = int(input("Digite a quantidade: "))
+            subTotal = precoUnitario * quantidade
+            descricaoProduto = produto_selecionado.get("descricao", "")
+            vendedor = vendedor_selecionado["nome_vendedor"]
+
+            produto = {
+                "nomeProduto": nomeProduto,
+                "precoUnitario": precoUnitario,
+                "quantidade": quantidade,
+                "subTotal": subTotal,
+                "descricaoProduto": descricaoProduto,
+                "vendedor": vendedor
+            }
+
+            compra_atual["produtos"].append(produto)
+            totalCompra += subTotal
+
+            print(f"Produto '{nomeProduto}' adicionado à compra do usuário com CPF {cpf}")
+
+            continuar = input("Deseja adicionar outro produto à compra (S/N)? ")
+            if continuar.lower() != 's':
+                break
+
+    compra_atual["totalCompra"] = totalCompra
+    compras.append(compra_atual)
+
+    mydoc["compra"] = compras
+    newvalues = {"$set": mydoc}
+    mycol.update_one({"cpf": cpf}, newvalues)
+
+def delete_compra():
     global db
     mycol = db.Usuário
-    myquery = {"cpf": cpf}
-    mydoc = mycol.find_one(myquery)
 
-    if mydoc:
-        nomeProduto = input("Digite o nome do produto: ")
-        if "compra" in mydoc:
-            for x in mydoc["compra"]:
-                if x["produto"]["nomeProduto"] == nomeProduto:
-                    mydoc["compra"].remove(x)
-                    newvalues = {"$set": mydoc}
-                    mycol.update_one(myquery, newvalues)
-                    print(f"Compra removida do usuário com CPF {cpf}")
-        else:
-            print(f"Usuário com CPF {cpf} não encontrado")
-            
+    cursor = mycol.find()
+    user_dict = {}
+    
+    for user in cursor:
+        print(f"Nome: {user['nome']} CPF: {user['cpf']}")
+        user_dict[user['cpf']] = user
+
+    if not user_dict:
+        print("Não há nenhum usuário cadastrado no Mercado Livre.")
+        return
+
+    cpf = input("Digite o CPF do usuário do qual deseja remover uma compra (ou deixe em branco para sair): ")
+
+    if not cpf:
+        return
+
+    if cpf not in user_dict:
+        print(f"Usuário com CPF {cpf} não encontrado")
+        return
+
+    mydoc = user_dict[cpf]
+
+    if "compra" in mydoc and mydoc["compra"]:
+        print("Compras do usuário:")
+        for i, compra in enumerate(mydoc["compra"], 1):
+            print(f"{i}. Total da compra: R$ {compra['totalCompra']:.2f}")
+
+        compra_idx = input("Digite o número da compra que deseja excluir: ")
+
+        try:
+            compra_idx = int(compra_idx)
+            if 1 <= compra_idx <= len(mydoc["compra"]):
+                removed_compra = mydoc["compra"].pop(compra_idx - 1)
+                newvalues = {"$set": mydoc}
+                mycol.update_one({"cpf": cpf}, newvalues)
+
+                print(f"Compra removida com sucesso:")
+                print(f"Total da compra: R$ {removed_compra['totalCompra']:.2f}")
+            else:
+                print("Número de compra inválido.")
+        except ValueError:
+            print("Entrada inválida. Por favor, digite o número da compra.")
+    else:
+        print("O usuário não possui compras registradas.")
+
+         

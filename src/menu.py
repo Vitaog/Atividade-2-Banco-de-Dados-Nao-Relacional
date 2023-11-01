@@ -1,6 +1,6 @@
 from produto import add_produto, delete_produto, read_produto, update_produto
 from usuario import add_compra, create_usuario, delete_compra, delete_favorito, read_usuario, update_usuario, delete_usuario, add_favorito
-from vendedor import add_vendedor, adicionar_avaliacao, atualizar_produto, cadastro_produto, listar_produtos,read_vendedor, remover_produto,update_vendedor,delete_vendedor
+from vendedor import add_vendedor, adicionar_avaliacao, atualizar_produto, cadastro_produto, read_vendedor, remover_produto,update_vendedor,delete_vendedor
 
 key = 0
 sub = 0
@@ -76,10 +76,9 @@ while (key != 'S' and key != 's'):
          print("4-Delete Vendedor")
          print("|--------------------Funcionalidades----------------------------|")
          print("5-Adicionar Produto")
-         print("6-Listar Produtos")
-         print("7-Atualizar Produto")
-         print("8-Remover Produto")
-         print("9-Adicionar Avaliação")
+         print("6-Atualizar Produto")
+         print("7-Remover Produto")
+         print("8-Adicionar Avaliação")
          print("|---------------------------------------------------------------|")
          sub = input("Digite a opção desejada? (V para voltar) ")
          print ("") 
@@ -110,22 +109,16 @@ while (key != 'S' and key != 's'):
              print ("")
         
          elif (sub == '6'):
-            print("|--------------------------------------------------------------|")
-            nome = input("Digite o nome do vendedor que deseja listar os produtos: ")
-            listar_produtos(nome)
-            print ("")
-        
-         elif (sub == '7'):
              print("|--------------------------------------------------------------|")
              atualizar_produto()
              print ("")
         
-         elif (sub == '8'):
+         elif (sub == '7'):
              print("|--------------------------------------------------------------|")
              remover_produto()
              print ("")
         
-         elif (sub == '9'):
+         elif (sub == '8'):
              print("|--------------------------------------------------------------|")
              adicionar_avaliacao()
              print ("")

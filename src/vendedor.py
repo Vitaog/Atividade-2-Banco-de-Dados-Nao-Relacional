@@ -82,9 +82,13 @@ def update_vendedor():
 
     while True:
         try:
-            vendedor_id = int(input("Selecione um vendedor por ID (digite o ID) ou pressione Enter para voltar: "))
-            if vendedor_id == 0:
+            vendedor_id_input = input("Selecione um vendedor por ID (digite o ID) ou pressione Enter para voltar: ")
+            
+            if not vendedor_id_input:
                 return  
+
+            vendedor_id = int(vendedor_id_input)
+
             if 1 <= vendedor_id <= len(vendedores):
                 vendedor_selecionado = vendedores[vendedor_id - 1]
                 nome_vendedor = vendedor_selecionado["nome_vendedor"]
@@ -103,7 +107,6 @@ def update_vendedor():
         except ValueError:
             print("ID inválido. Tente novamente.")
 
-
 def delete_vendedor():
     global db
     mycol = db.Vendedor
@@ -114,12 +117,15 @@ def delete_vendedor():
         print("Não existem vendedores cadastrados.")
         return
 
-
     while True:
         try:
-            vendedor_id = int(input("Selecione um vendedor por ID (digite o ID) ou pressione Enter para voltar: "))
-            if vendedor_id == 0:
+            vendedor_id_input = input("Selecione um vendedor por ID (digite o ID) ou pressione Enter para voltar: ")
+            
+            if not vendedor_id_input:
                 return  
+
+            vendedor_id = int(vendedor_id_input)
+
             if 1 <= vendedor_id <= len(vendedores):
                 vendedor_selecionado = vendedores[vendedor_id - 1]
                 nome_vendedor = vendedor_selecionado["nome_vendedor"]
@@ -134,7 +140,6 @@ def delete_vendedor():
                 print("ID inválido. Tente novamente.")
         except ValueError:
             print("ID inválido. Tente novamente.")
-
 
 def cadastro_produto():
     global db
@@ -158,128 +163,137 @@ def cadastro_produto():
 
     produto_selecionado = produtos[produto_id - 1]
 
-    nome_vendedor = input("Digite o nome do vendedor: ")
+    
+    vendedores = list(mycol_vendedor.find())
+    print("Vendedores disponíveis: ")
+    for i, vendedor in enumerate(vendedores, 1):
+        print(f"{i}. {vendedor['nome_vendedor']}")
 
-    vendedor = mycol_vendedor.find_one({"nome_vendedor": nome_vendedor})
+    while True:
+        try:
+            vendedor_id = int(input("Selecione um vendedor (digite o ID): "))
+            if 1 <= vendedor_id <= len(vendedores):
+                break
+            else:
+                print("ID inválido. Tente novamente.")
+        except ValueError:
+            print("ID inválido. Tente novamente.")
 
-    if vendedor:
-        preco = float(input("Digite o preço do produto: "))
-        quantidade_disponivel = int(input("Digite a quantidade disponível: "))
+    vendedor_selecionado = vendedores[vendedor_id - 1]
 
-        produto_vendedor = {
-            "nome_produto": produto_selecionado["nome_produto"],
-            "descricao": produto_selecionado["descricao"],
-            "preco": preco,
-            "quantidade_disponivel": quantidade_disponivel
-        }
-        if "produtos" not in vendedor:
-            vendedor["produtos"] = [produto_vendedor]
-        else:
-            vendedor["produtos"].append(produto_vendedor)
+    preco = float(input("Digite o preço do produto: "))
+    quantidade_disponivel = int(input("Digite a quantidade disponível: "))
 
-        newvalues = {"$set": vendedor}
-        mycol_vendedor.update_one({"_id": vendedor["_id"]}, newvalues)
-
-        print(f"Produto '{produto_selecionado['nome_produto']}' adicionado ao vendedor '{nome_vendedor}' com sucesso.")
+    produto_vendedor = {
+        "nome_produto": produto_selecionado["nome_produto"],
+        "descricao": produto_selecionado["descricao"],
+        "preco": preco,
+        "quantidade_disponivel": quantidade_disponivel
+    }
+    if "produtos" not in vendedor_selecionado:
+        vendedor_selecionado["produtos"] = [produto_vendedor]
     else:
-        print(f"Vendedor com o nome '{nome_vendedor}' não encontrado.")
+        vendedor_selecionado["produtos"].append(produto_vendedor)
 
+    newvalues = {"$set": vendedor_selecionado}
+    mycol_vendedor.update_one({"_id": vendedor_selecionado["_id"]}, newvalues)
 
-
-def listar_produtos(nome_vendedor):
-    global db
-    mycol_vendedor = db.Vendedor
-
-    vendedor = mycol_vendedor.find_one({"nome_vendedor": nome_vendedor})
-
-    if vendedor:
-        print(f"Produtos do vendedor '{nome_vendedor}':")
-        if "produtos" in vendedor and vendedor["produtos"]:
-            for produto in vendedor["produtos"]:
-                print(f"{produto['nome_produto']}, Descrição: {produto['descricao']} , Preço: R$ {produto['preco']}, Quantidade disponível: {produto['quantidade_disponivel']}")
-        else:
-            print("O vendedor não possui produtos cadastrados.")
-    else:
-        print(f"Vendedor com o nome '{nome_vendedor}' não encontrado.")
+    print(f"Produto '{produto_selecionado['nome_produto']}' adicionado ao vendedor '{vendedor_selecionado['nome_vendedor']}' com sucesso.")
 
 def atualizar_produto():
     global db
     mycol_vendedor = db.Vendedor
 
-    nome_vendedor = input("Digite o nome do vendedor: ")
+    vendedores = list(mycol_vendedor.find())
+    print("Vendedores disponíveis: ")
+    for i, vendedor in enumerate(vendedores, 1):
+        print(f"{i}. {vendedor['nome_vendedor']}")
 
-    
-    vendedor = mycol_vendedor.find_one({"nome_vendedor": nome_vendedor})
+    while True:
+        try:
+            vendedor_id = int(input("Selecione um vendedor (digite o ID): "))
+            if 1 <= vendedor_id <= len(vendedores):
+                break
+            else:
+                print("ID inválido. Tente novamente.")
+        except ValueError:
+            print("ID inválido. Tente novamente.")
 
-    if vendedor:
-        if "produtos" in vendedor and len(vendedor["produtos"]) > 0:
-            print(f"Produtos do vendedor '{nome_vendedor}':")
-            for i, produto in enumerate(vendedor["produtos"], 1):
-                print(f"{i}.  {produto['nome_produto']}, Descrição: {produto['descricao']}")
+    vendedor_selecionado = vendedores[vendedor_id - 1]
 
-            
-            while True:
-                try:
-                    produto_id = int(input("Selecione um produto (digite o ID): "))
-                    if 1 <= produto_id <= len(vendedor["produtos"]):
-                        break
-                    else:
-                        print("ID inválido. Tente novamente.")
-                except ValueError:
+    if "produtos" in vendedor_selecionado and len(vendedor_selecionado["produtos"]) > 0:
+        print(f"Produtos do vendedor '{vendedor_selecionado['nome_vendedor']}:")
+        for i, produto in enumerate(vendedor_selecionado["produtos"], 1):
+            print(f"{i}. {produto['nome_produto']}, Descrição: {produto['descricao']}")
+
+        while True:
+            try:
+                produto_id = int(input("Selecione um produto (digite o ID): "))
+                if 1 <= produto_id <= len(vendedor_selecionado["produtos"]):
+                    break
+                else:
                     print("ID inválido. Tente novamente.")
+            except ValueError:
+                print("ID inválido. Tente novamente.")
 
-           
-            produto_selecionado = vendedor["produtos"][produto_id - 1]
+        produto_selecionado = vendedor_selecionado["produtos"][produto_id - 1]
 
-            novo_preco = float(input("Digite o novo preço do produto: "))
-            nova_quantidade = int(input("Digite a nova quantidade disponível: "))
+        novo_preco = float(input("Digite o novo preço do produto: "))
+        nova_quantidade = int(input("Digite a nova quantidade disponível: "))
 
-            
-            vendedor["produtos"][produto_id - 1]["preco"] = novo_preco
-            vendedor["produtos"][produto_id - 1]["quantidade_disponivel"] = nova_quantidade
+        vendedor_selecionado["produtos"][produto_id - 1]["preco"] = novo_preco
+        vendedor_selecionado["produtos"][produto_id - 1]["quantidade_disponivel"] = nova_quantidade
 
-            
-            mycol_vendedor.update_one({"_id": vendedor["_id"]}, {"$set": vendedor})
+        mycol_vendedor.update_one({"_id": vendedor_selecionado["_id"]}, {"$set": vendedor_selecionado})
 
-            print(f"Produto '{produto_selecionado['nome_produto']}' atualizado com sucesso.")
-        else:
-            print("O vendedor não possui produtos cadastrados.")
+        print(f"Produto '{produto_selecionado['nome_produto']}' atualizado com sucesso.")
     else:
-        print(f"Vendedor com o nome '{nome_vendedor}' não encontrado.")
+        print("O vendedor não possui produtos cadastrados.")
 
 def remover_produto():
     global db
     mycol_vendedor = db.Vendedor
 
-    nome_vendedor = input("Digite o nome do vendedor: ")
+    vendedores = list(mycol_vendedor.find())
+    print("Vendedores disponíveis: ")
+    for i, vendedor in enumerate(vendedores, 1):
+        print(f"{i}. {vendedor['nome_vendedor']}")
 
-    vendedor = mycol_vendedor.find_one({"nome_vendedor": nome_vendedor})
+    while True:
+        try:
+            vendedor_id = int(input("Digite o ID do vendedor: "))
+            if 1 <= vendedor_id <= len(vendedores):
+                break
+            else:
+                print("ID inválido. Tente novamente.")
+        except ValueError:
+            print("ID inválido. Tente novamente.")
 
-    if vendedor:
-        if "produtos" in vendedor and len(vendedor["produtos"]) > 0:
-            print(f"Produtos do vendedor '{nome_vendedor}':")
-            for i, produto in enumerate(vendedor["produtos"], 1):
-                print(f"{i}.  {produto['nome_produto']}, Descrição: {produto['descricao']}")
+    vendedor_selecionado = vendedores[vendedor_id - 1]
 
-            while True:
-                try:
-                    produto_id = int(input("Selecione um produto para remoção (digite o ID): "))
-                    if 1 <= produto_id <= len(vendedor["produtos"]):
-                        break
-                    else:
-                        print("ID inválido. Tente novamente.")
-                except ValueError:
+    if "produtos" in vendedor_selecionado and len(vendedor_selecionado["produtos"]) > 0:
+        print(f"Produtos do vendedor '{vendedor_selecionado['nome_vendedor']}:")
+        for i, produto in enumerate(vendedor_selecionado["produtos"], 1):
+            print(f"{i}. {produto['nome_produto']}, Descrição: {produto['descricao']}")
+
+        while True:
+            try:
+                produto_id = int(input("Selecione um produto para remoção (digite o ID): "))
+                if 1 <= produto_id <= len(vendedor_selecionado["produtos"]):
+                    break
+                else:
                     print("ID inválido. Tente novamente.")
+            except ValueError:
+                print("ID inválido. Tente novamente.")
 
-            produto_selecionado = vendedor["produtos"].pop(produto_id - 1)
+        produto_selecionado = vendedor_selecionado["produtos"].pop(produto_id - 1)
 
-            mycol_vendedor.update_one({"_id": vendedor["_id"]}, {"$set": vendedor})
+        mycol_vendedor.update_one({"_id": vendedor_selecionado["_id"]}, {"$set": vendedor_selecionado})
 
-            print(f"Produto '{produto_selecionado['nome_produto']}' removido com sucesso.")
-        else:
-            print("O vendedor não possui produtos cadastrados.")
+        print(f"Produto '{produto_selecionado['nome_produto']}' removido com sucesso.")
     else:
-        print(f"Vendedor com o nome '{nome_vendedor}' não encontrado.")
+        print("O vendedor não possui produtos cadastrados.")
+
 
 def adicionar_avaliacao():
     global db

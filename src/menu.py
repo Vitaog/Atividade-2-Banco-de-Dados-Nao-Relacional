@@ -145,20 +145,17 @@ while (key != 'S' and key != 's'):
 
         elif (sub == '2'):
             print("|----------------Listagem de Produto-------------------------|")
-            nome = input("Digite o nome do produto ou clique ENTER para listagem dos produtos: ")
-            read_produto(nome)
+            read_produto()
             print ("")
         
         elif (sub == '3'):
             print("|--------------------------------------------------------------|")
-            nome = input("Digite o nome do produto que deseja atualizar: ")
-            update_produto(nome)
+            update_produto()
             print ("")
         
         elif (sub == '4'):
             print("|--------------------------------------------------------------|")
-            nome = input("Digite o nome para deletar o produto desejado: ")
-            delete_produto(nome)
+            delete_produto()
             print ("")
             
 

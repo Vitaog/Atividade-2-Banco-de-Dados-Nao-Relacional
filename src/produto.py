@@ -26,55 +26,101 @@ def add_produto():
     x = mycol.insert_one(produto)
     print("Produto inserido com ID ", x.inserted_id)
 
-def read_produto(nome):
+def read_produto():
     global db
     mycol = db.Produto
     print("Produtos existentes: ")
-    if not len (nome):
-        mydoc = mycol.find()
-        for produto in mydoc:
-            print(f" {produto['nome_produto']}")
-    else:
-        myquery = {"nome_produto": nome}
-        mydoc = mycol.find(myquery)
-        for x in mydoc:
-            print(f"Produto: {x['nome_produto']}, Descrição: {x['descricao']}")
-
     
+    products = list(mycol.find())
+    
+    if not products:
+        print("Nenhum produto encontrado.")
+    else:
+        for i, produto in enumerate(products, start=1):
+            print(f"{i}. {produto['nome_produto']}")
+    
+    selected_id = input("Selecione um produto pelo ID (ou pressione ENTER para sair): ")
+    
+    if selected_id:
+        try:
+            selected_id = int(selected_id)
+            if 1 <= selected_id <= len(products):
+                selected_product = products[selected_id - 1]
+                print(f"Produto: {selected_product['nome_produto']}, Descrição: {selected_product['descricao']}")
+            else:
+                print("ID inválido.")
+        except ValueError:
+            print("ID deve ser um número válido.")
+    else:
+        print("Saindo da leitura de produtos.")
 
-def update_produto(nome_produto):
+def update_produto():
     global db
     mycol = db.Produto
-    myquery = {"nome_produto": nome_produto}
-    mydoc = mycol.find_one(myquery)
-
-    if mydoc:
-        print("Dados do produto:")
-        print(f"Nome do Produto: {mydoc['nome_produto']}, Descrição: {mydoc['descricao']}, Data de Cadastro: {mydoc['data_cadastro']}")
-        
-        novo_nome = input("Mudar Nome do Produto: (Digite o novo nome ou pressione ENTER para manter o mesmo nome) ")
-        if novo_nome:
-            mydoc['nome_produto'] = novo_nome
-
-        nova_descricao = input("Mudar Descrição: (Digite a nova descrição ou pressione ENTER para manter a mesma descrição) ")
-        if nova_descricao:
-            mydoc['descricao'] = nova_descricao
-
-        newvalues = {"$set": mydoc}
-        mycol.update_one(myquery, newvalues)
-        print(f"Produto atualizado com sucesso!")
-
+    print("Produtos existentes: ")
+    
+    products = list(mycol.find())
+    
+    if not products:
+        print("Nenhum produto encontrado.")
     else:
-        print(f"Produto com o nome '{nome_produto}' não encontrado")
+        for i, produto in enumerate(products, start=1):
+            print(f"{i}. {produto['nome_produto']}")
+    
+    selected_id = input("Selecione um produto pelo ID para atualizar (ou pressione ENTER para sair): ")
+    
+    if selected_id:
+        try:
+            selected_id = int(selected_id)
+            if 1 <= selected_id <= len(products):
+                selected_product = products[selected_id - 1]
+                print("Dados do produto:")
+                print(f"Nome do Produto: {selected_product['nome_produto']}, Descrição: {selected_product['descricao']}, Data de Cadastro: {selected_product['data_cadastro']}")
+                
+                novo_nome = input("Mudar Nome do Produto: (Digite o novo nome ou pressione ENTER para manter o mesmo nome) ")
+                if novo_nome:
+                    selected_product['nome_produto'] = novo_nome
 
-def delete_produto(nome_produto):
+                nova_descricao = input("Mudar Descrição: (Digite a nova descrição ou pressione ENTER para manter a mesma descrição) ")
+                if nova_descricao:
+                    selected_product['descricao'] = nova_descricao
+
+                newvalues = {"$set": selected_product}
+                mycol.update_one({"_id": selected_product['_id']}, newvalues)
+                print(f"Produto atualizado com sucesso!")
+            else:
+                print("ID inválido.")
+        except ValueError:
+            print("ID deve ser um número válido.")
+    else:
+        print("Saindo da atualização de produtos.")
+
+
+def delete_produto():
     global db
     mycol = db.Produto
-    myquery = {"nome_produto": nome_produto}
-    mydoc = mycol.find_one(myquery)
-
-    if mydoc:
-        mycol.delete_one(myquery)
-        print(f"Produto com o nome '{nome_produto}' foi removido com sucesso")
+    print("Produtos existentes: ")
+    
+    products = list(mycol.find())
+    
+    if not products:
+        print("Nenhum produto encontrado.")
     else:
-        print(f"Produto com o nome '{nome_produto}' não encontrado")
+        for i, produto in enumerate(products, start=1):
+            print(f"{i}. {produto['nome_produto']}")
+    
+    selected_id = input("Selecione um produto pelo ID para excluir (ou pressione ENTER para sair): ")
+    
+    if selected_id:
+        try:
+            selected_id = int(selected_id)
+            if 1 <= selected_id <= len(products):
+                selected_product = products[selected_id - 1]
+                mycol.delete_one({"_id": selected_product['_id']})
+                print(f"Produto com ID {selected_id} foi removido com sucesso")
+            else:
+                print("ID inválido.")
+        except ValueError:
+            print("ID deve ser um número válido.")
+    else:
+        print("Saindo da exclusão de produtos.")

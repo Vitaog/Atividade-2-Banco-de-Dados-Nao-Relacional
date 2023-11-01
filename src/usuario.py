@@ -9,16 +9,33 @@ client = MongoClient(uriMongo, server_api=ServerApi('1'))
 global db
 db = client.Mercado_Livre
 
-def delete_usuario(cpf):
+def delete_usuario():
     global db
     mycol = db.Usuário
-    myquery = {"cpf" : cpf}
-    mydoc = mycol.delete_one(myquery)
 
-    if mydoc.deleted_count == 0:
-        print(f"Usuário com o CPF {cpf} não encontrado")
-    else:
-        print(f"Usuário com o CPF {cpf} deletado com sucesso")
+    cursor = mycol.find()
+    user_dict = {}  # Um dicionário para mapear CPF para o usuário
+    for user in cursor:
+        print(f"Nome: {user['nome']} CPF: {user['cpf']}")
+        user_dict[user['cpf']] = user
+
+    if not user_dict:
+        print("Não há nenhum usuário cadastrado no Mercado Livre.")
+        return
+
+    cpf = input("Digite o CPF do usuário que deseja deletar (ou deixe em branco para sair): ")
+
+    if not cpf:
+        return
+
+    if cpf not in user_dict:
+        print(f"Usuário com CPF {cpf} não encontrado")
+        return
+
+    mydoc = user_dict[cpf]
+
+    mycol.delete_one({"cpf": cpf})
+    print(f"Usuário com CPF {cpf} deletado com sucesso.")
 
 
 def create_usuario():
@@ -51,85 +68,133 @@ def create_usuario():
     x = mycol.insert_one(mydoc)
     print("Documento inserido com ID ",x.inserted_id)
 
-def read_usuario(cpf):
+def read_usuario():
     global db
     mycol = db.Usuário
-    print("Usuários existentes: ")
-    if not len(cpf):
-        mydoc = mycol.find().sort("nome")
-        for x in mydoc:
-            print(f"Nome: {x["nome"]} CPF: {x["cpf"]}")
-    else:
-        myquery = {"cpf": cpf}
-        mydoc = mycol.find_one(myquery)
-        if mydoc:
-            nome = mydoc.get("nome", "Nome não disponível")
-            sobrenome = mydoc.get("sobrenome", "Sobrenome não disponível")
-            cpf = mydoc.get("cpf", "CPF não disponível")
-            end = mydoc.get("end", "Endereço não disponível")
-            favoritos = mydoc.get("favoritos")
-            compra = mydoc.get("compra")
-            
-            print(f"Nome: {nome} {sobrenome}, CPF: {cpf}, Endereço: {end}")
-            
-            if favoritos is None:
-                print("Não possui favoritos")
-            elif favoritos:
-                print(f"Favoritos: {favoritos}")
-            
-            if compra is None:
-                print("Não possui compras")
-            elif compra:
-                print(f"Compras: {compra}")
-        else:
-           print(f"Usuário com CPF {cpf} não encontrado")
 
-def update_usuario(cpf):
-    global db
-    key = 1
-    mycol = db.Usuário
-    myquery = {"cpf": cpf}
-    mydoc = mycol.find_one(myquery)
-    if mydoc is None:
-        print(f"Usuário com CPF {cpf} não encontrado")  
-    else:
-        print("Dados do usuário: ",mydoc)
-        nome = input("Mudar Nome: (Digite o nome ou clique ENTER para manter o mesmo nome) ")
-        if len(nome):
-            mydoc["nome"] = nome
+    cursor = mycol.find()
+    user_dict = {} 
+    for user in cursor:
+        print(f"Nome: {user['nome']} CPF: {user['cpf']}")
+        user_dict[user['cpf']] = user
 
-        sobrenome = input("Mudar Sobrenome: (Digite o sobrenome ou clique ENTER para manter o mesmo sobrenome)")
-        if len(sobrenome):
-            mydoc["sobrenome"] = sobrenome
+    if not user_dict:
+        print("Não há nenhum usuário cadastrado no Mercado Livre.")
+        return
 
-        cpf = input("Mudar CPF: (Digite o CPF ou clique ENTER para manter o mesmo CPF)")
-        if len(cpf):
-            mydoc["cpf"] = cpf
-
-        end = input("Mudar endereço: (Digite  S para atualizar ou clique ENTER para manter o mesmo endereço)")
-        if len(end):
-            end = []
-            while (key != 'N' and key !='n'):
-                rua = input("Rua: ")
-                num = input("Num: ")
-                bairro = input("Bairro: ")
-                cidade = input("Cidade: ")
-                estado = input("Estado: ")
-                cep = input("CEP: ")
-                endereco = {        
-                    "rua":rua,
-                    "num": num,
-                    "bairro": bairro,
-                    "cidade": cidade,
-                    "estado": estado,
-                    "cep": cep
-                }
-                end.append(endereco)
-                key = input("Deseja cadastrar um novo endereço (S/N)? ")
-            mydoc["end"] = end 
-        newvalues = { "$set": mydoc }
-        mycol.update_one(myquery, newvalues)
+    cpf = input("Digite o CPF do usuário que deseja visualizar (ou deixe em branco para sair): ")
     
+    if not cpf:
+        return
+
+    if cpf not in user_dict:
+        print(f"Usuário com CPF {cpf} não encontrado")
+        return
+
+    mydoc = user_dict[cpf]
+
+    nome = mydoc.get("nome", "Nome não disponível")
+    sobrenome = mydoc.get("sobrenome", "Sobrenome não disponível")
+    cpf = mydoc.get("cpf", "CPF não disponível")
+    end = mydoc.get("end", "Endereço não disponível")
+    favoritos = mydoc.get("favoritos")
+    compra = mydoc.get("compra")
+
+    print(f"Nome: {nome} {sobrenome}, CPF: {cpf}, Endereço: {end}")
+
+    if favoritos is None:
+        print("Não possui favoritos")
+    elif favoritos:
+        print(f"Favoritos: {favoritos}")
+
+    if compra is None:
+        print("Não possui compras")
+    elif compra:
+        print(f"Compras: {compra}")
+
+def update_usuario():
+    global db
+    mycol = db.Usuário
+
+    cursor = mycol.find()
+    user_dict = {}
+    for user in cursor:
+        print(f"Nome: {user['nome']} CPF: {user['cpf']}")
+        user_dict[user['cpf']] = user
+
+    if not user_dict:
+        print("Não há nenhum usuário cadastrado no Mercado Livre.")
+        return
+
+    cpf = input("Digite o CPF do usuário que deseja atualizar (ou deixe em branco para sair): ")
+
+    if not cpf:
+        return
+
+    if cpf not in user_dict:
+        print(f"Usuário com CPF {cpf} não encontrado")
+        return
+
+    mydoc = user_dict[cpf]
+
+    print("Dados atuais do usuário:")
+    nome = mydoc.get("nome", "Nome não disponível")
+    sobrenome = mydoc.get("sobrenome", "Sobrenome não disponível")
+    cpf = mydoc.get("cpf", "CPF não disponível")
+    end = mydoc.get("end", "Endereço não disponível")
+    favoritos = mydoc.get("favoritos")
+    compra = mydoc.get("compra")
+
+    print(f"Nome: {nome} {sobrenome}, CPF: {cpf}, Endereço: {end}")
+
+    if favoritos is None:
+        print("Não possui favoritos")
+    elif favoritos:
+        print(f"Favoritos: {favoritos}")
+
+    if compra is None:
+        print("Não possui compras")
+    elif compra:
+        print(f"Compras: {compra}")
+
+    key = 1
+    nome = input("Mudar Nome: (Digite o nome ou clique ENTER para manter o mesmo nome) ")
+    if len(nome):
+        mydoc["nome"] = nome
+
+    sobrenome = input("Mudar Sobrenome: (Digite o sobrenome ou clique ENTER para manter o mesmo sobrenome)")
+    if len(sobrenome):
+        mydoc["sobrenome"] = sobrenome
+
+    new_cpf = input("Mudar CPF: (Digite o CPF ou clique ENTER para manter o mesmo CPF)")
+    if len(new_cpf):
+        mydoc["cpf"] = new_cpf
+
+    end = input("Mudar endereço: (Digite S para atualizar ou clique ENTER para manter o mesmo endereço)")
+    if len(end):
+        end = []
+        while (key != 'N' and key != 'n'):
+            rua = input("Rua: ")
+            num = input("Num: ")
+            bairro = input("Bairro: ")
+            cidade = input("Cidade: ")
+            estado = input("Estado: ")
+            cep = input("CEP: ")
+            endereco = {
+                "rua": rua,
+                "num": num,
+                "bairro": bairro,
+                "cidade": cidade,
+                "estado": estado,
+                "cep": cep
+            }
+            end.append(endereco)
+            key = input("Deseja cadastrar um novo endereço (S/N)? ")
+        mydoc["end"] = end
+
+    mycol.update_one({"cpf": cpf}, {"$set": mydoc})
+    print("Usuário atualizado com sucesso.")
+
 def get_lista_produtos():
     global db
     produto_col = db.Produto
@@ -285,7 +350,7 @@ def add_compra(cpf):
     if mydoc:
         compras = mydoc.get("compra", [])
 
-        totalCompra = 0  # Inicializa o total da compra
+        totalCompra = 0 
 
         compra_atual = {"produtos": []}
 
@@ -296,7 +361,7 @@ def add_compra(cpf):
                 nomeProduto = produto_selecionado["nome_produto"]
                 vendedor_produtos = vendedor_selecionado.get("produtos", [])
                 
-                # Encontre o preço do produto no vendedor
+                
                 for produto_vendedor in vendedor_produtos:
                     if produto_vendedor.get("nome_produto") == nomeProduto:
                         precoUnitario = produto_vendedor.get("preco", 0)
@@ -320,7 +385,7 @@ def add_compra(cpf):
 
                 compra_atual["produtos"].append(produto)
 
-                totalCompra += subTotal  # Adiciona o subTotal ao total da compra
+                totalCompra += subTotal  
 
                 print(f"Produto '{nomeProduto}' adicionado à compra do usuário com CPF {cpf}")
 
@@ -328,7 +393,7 @@ def add_compra(cpf):
                 if continuar.lower() != 's':
                     break
 
-        # Atualiza o total da compra na compra atual
+       
         compra_atual["totalCompra"] = totalCompra
 
         compras.append(compra_atual)

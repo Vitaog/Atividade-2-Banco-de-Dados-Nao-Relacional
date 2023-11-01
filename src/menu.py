@@ -35,20 +35,17 @@ while (key != 'S' and key != 's'):
             
         elif (sub == '2'):
             print("|----------------Listagem de Usuário-------------------------|")
-            cpf = input("Digite o CPF do usuário ou clique ENTER para listagem dos usuários: ")
-            read_usuario(cpf)
+            read_usuario()
             print ("")
         
         elif (sub == '3'):
             print("|--------------------------------------------------------------|")
-            cpf = input("Digite o CPF do usuário que deseja atualizar: ")
-            update_usuario(cpf)
+            update_usuario()
             print ("")
 
         elif (sub == '4'):
             print("|--------------------------------------------------------------|")
-            cpf = input("Digite o cpf para deletar o usuário desejado: ")
-            delete_usuario(cpf)
+            delete_usuario()
             print ("")
         
         elif (sub == '5'):
@@ -98,7 +95,6 @@ while (key != 'S' and key != 's'):
         
          elif (sub == '2'):
              print("|----------------Listagem de Vendedor-------------------------|")
-            #  nome = input("Digite o nome do vendedor ou clique ENTER para listagem dos vendedores: ")
              read_vendedor()
              print ("")
 

@@ -163,7 +163,9 @@ def update_usuario():
     favoritos = mydoc.get("favoritos")
     compra = mydoc.get("compra")
 
-    print(f"Nome: {nome} {sobrenome}, CPF: {cpf}, Endereço: {end}")
+    print(f"Nome: {nome} {sobrenome}, CPF: {cpf}")
+    for endereco in end:
+        print(f"Rua: {endereco['rua']}, Número: {endereco['num']}, Bairro: {endereco['bairro']}, Cidade: {endereco['cidade']}, Estado: {endereco['estado']}, CEP: {endereco['cep']}")
 
     if favoritos is None:
         print("Não possui favoritos")
@@ -383,7 +385,7 @@ def listar_produtos_e_vendedores():
     vendedor_col = db.Vendedor
 
     produtos = list(produto_col.find())
-    
+
     if not produtos:
         print("Não há produtos disponíveis.")
         return None, None
@@ -408,29 +410,30 @@ def listar_produtos_e_vendedores():
 
     vendedores_disponiveis = []
 
-    vendedor_idx = 1
-
-    print("Vendedores disponíveis para o produto:")
-    vendedor_idx_mapping = {}  
+    vendedor_idx_mapping = {}
     for vendedor in vendedor_col.find():
         for produto in vendedor.get("produtos", []):
             if produto.get("nome_produto") == produto_selecionado["nome_produto"]:
-                vendedores_disponiveis.append(vendedor)
-                print(f"{vendedor_idx}. {vendedor['nome_vendedor']}")
-                vendedor_idx_mapping[vendedor_idx] = vendedor
-                vendedor_idx += 1
+                preco = produto.get("preco", 0)
+                vendedores_disponiveis.append((vendedor, preco))
+                vendedor_idx_mapping[len(vendedores_disponiveis)] = (vendedor, preco)
 
     if not vendedores_disponiveis:
         print("Este produto não possui vendedores disponíveis.")
         return None, None
 
+    print("Vendedores disponíveis para o produto:")
+    for i, (vendedor, preco) in enumerate(vendedores_disponiveis, 1):
+        print(f"{i}. {vendedor['nome_vendedor']} - Preço: R$ {preco:.2f}")
+
     vendedor_idx = input("Digite o número do vendedor desejado: ")
 
     try:
         vendedor_idx = int(vendedor_idx)
-        if vendedor_idx in vendedor_idx_mapping:
-            vendedor_selecionado = vendedor_idx_mapping[vendedor_idx]
+        if 1 <= vendedor_idx <= len(vendedores_disponiveis):
+            vendedor_selecionado, preco = vendedor_idx_mapping[vendedor_idx]
             print(f"Vendedor selecionado: {vendedor_selecionado['nome_vendedor']}")
+            print(f"Preço do produto: R$ {preco:.2f}")
         else:
             print("Número de vendedor inválido.")
             return None, None
@@ -439,6 +442,7 @@ def listar_produtos_e_vendedores():
         return None, None
 
     return produto_selecionado, vendedor_selecionado
+
 
 def add_compra():
     global db
@@ -542,26 +546,38 @@ def delete_compra():
     mydoc = user_dict[cpf]
 
     if "compra" in mydoc and mydoc["compra"]:
-        print("Compras do usuário:")
-        for i, compra in enumerate(mydoc["compra"], 1):
-            print(f"{i}. Total da compra: R$ {compra['totalCompra']:.2f}")
+        while True:
+            print("Compras do usuário:")
+            for i, compra in enumerate(mydoc["compra"], 1):
+                print(f"{i}. Total da compra: R$ {compra['totalCompra']:.2f}")
+                print("Produtos da Compra:")
+                for produto_compra in compra["produtos"]:
+                    print(f"Nome do Produto: {produto_compra['nomeProduto']}")
+                    print(f"Nome do Vendedor: {produto_compra['vendedor']}")
+                print()
 
-        compra_idx = input("Digite o número da compra que deseja excluir: ")
+            compra_idx = input("Digite o número da compra que deseja excluir (ou 'V' para voltar): ")
 
-        try:
-            compra_idx = int(compra_idx)
-            if 1 <= compra_idx <= len(mydoc["compra"]):
-                removed_compra = mydoc["compra"].pop(compra_idx - 1)
-                newvalues = {"$set": mydoc}
-                mycol.update_one({"cpf": cpf}, newvalues)
+            if compra_idx.lower() == 'v':
+                break
 
-                print(f"Compra removida com sucesso:")
-                print(f"Total da compra: R$ {removed_compra['totalCompra']:.2f}")
+            try:
+                compra_idx = int(compra_idx)
+                if 1 <= compra_idx <= len(mydoc["compra"]):
+                    removed_compra = mydoc["compra"].pop(compra_idx - 1)
+                    newvalues = {"$set": mydoc}
+                    mycol.update_one({"cpf": cpf}, newvalues)
+
+                    print(f"Compra removida com sucesso:")
+                    print(f"Total da compra: R$ {removed_compra['totalCompra']:.2f}")
+                    for produto_compra in removed_compra["produtos"]:
+                        print(f"Nome do Produto: {produto_compra['nomeProduto']}")
+                        print(f"Nome do Vendedor: {produto_compra['vendedor']}")
+                else:
+                    print("Número de compra inválido.")
+            except ValueError:
+                print("Entrada inválida. Por favor, digite o número da compra.")
             else:
-                print("Número de compra inválido.")
-        except ValueError:
-            print("Entrada inválida. Por favor, digite o número da compra.")
+                break  
     else:
         print("O usuário não possui compras registradas.")
-
-         
